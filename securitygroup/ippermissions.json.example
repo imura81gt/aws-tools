@@ -1,0 +1,51 @@
+[
+    {
+        "ToPort": 22, 
+        "IpProtocol": "tcp", 
+        "IpRanges": [
+            {
+                "CidrIp": "10.0.1.0/24"
+            }, 
+            {
+                "CidrIp": "10.2.0.0/16"
+            }
+        ], 
+        "UserIdGroupPairs": [], 
+        "FromPort": 22
+    }, 
+    {
+        "ToPort": 80, 
+        "IpProtocol": "tcp", 
+        "IpRanges": [
+            {
+                "CidrIp": "10.2.0.200/32"
+            }
+        ], 
+        "UserIdGroupPairs": [], 
+        "FromPort": 80
+    }, 
+    {
+        "ToPort": 80, 
+        "IpProtocol": "tcp", 
+        "IpRanges": [], 
+        "UserIdGroupPairs": [
+            {
+                "UserId": "999999999999", 
+                "GroupId": "sg-hogehoge"
+            }
+        ], 
+        "FromPort": 80
+    }, 
+    {
+        "ToPort": 22, 
+        "IpProtocol": "tcp", 
+        "IpRanges": [], 
+        "UserIdGroupPairs": [
+            {
+                "UserId": "999999999999", 
+                "GroupId": "sg-hogehoge"
+            }
+        ], 
+        "FromPort": 22
+    }
+]
