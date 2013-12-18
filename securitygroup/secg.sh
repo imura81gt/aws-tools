@@ -15,7 +15,6 @@ fi
 
 echo "# Create a new Security Group ${SG_NAME} to VPC(${VPC_ID})"
 seg_g_result_array=(`aws ec2 create-security-group --group-name ${SECG_NAME} --description "${SECG_DESC}" --vpc-id ${VPC_ID} | jq '.return,.GroupId' -r`)
-#seg_g_result_array=(`cat /Users/timura/test.json | jq '.return,.GroupId' -r`)
 
 SECG_RETURN=${seg_g_result_array[0]}
 SECG_ID=${seg_g_result_array[1]}
