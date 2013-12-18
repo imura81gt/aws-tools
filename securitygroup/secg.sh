@@ -3,10 +3,17 @@
 # curl -L https://raw.github.com/imura81gt/aws-tools/master/securitygroup/secg.sh | VPC_ID=vpc-xxxxxxxx SECG_NAME=hogehoge SECG_DESC='secg for hogehoge' IP_PERM_JSON=[https://example.com/hogehoge.json|file:///home/hogehoge/ipermissions.json] bash
 #
 
-#SECG_NAME="opp-batch"
-#SECG_DESC="sg for opp batch"
-#VPC_ID="vpc-6fb68607"
-#IP_PERM_JSON="file://${SCRIPT_DIR}/ippermissions.json"
+for i in VPC_ID SECG_NAME SECG_DESC IP_PERM_JSON
+do
+  I=$(eval echo '$'$i)
+  if [ "${I}" == "" ]
+  then
+    echo "Error: ENV[${i}] is required." 1>&2
+    exit 1
+  else
+    echo $i=$I
+  fi
+done
 
 if [ $(aws ec2 describe-security-groups --filters Name=group-name,Values=$SECG_NAME | jq '.SecurityGroups | length') == 1 ]
 then
