@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #
 # curl -L https://raw.github.com/imura81gt/aws-tools/master/securitygroup/secg.sh | VPC_ID=vpc-xxxxxxxx SECG_NAME=hogehoge SECG_DESC='secg for hogehoge' IP_PERM_JSON=[https://example.com/hogehoge.json|file:///home/hogehoge/ipermissions.json] bash
@@ -17,7 +18,10 @@ done
 
 if [ $(aws ec2 describe-security-groups --filters Name=group-name,Values=$SECG_NAME | jq '.SecurityGroups | length') == 1 ]
 then
+  SECG_ID=`aws ec2 describe-security-groups --filters Name=group-name,Values=opp-batch | jq '.SecurityGroups[].GroupId' -r`
   echo "Error: Already created Security Group(${SECG_NAME})" 1>&2
+  echo "# You can remove the Security Group by the following command." 1>&2
+  echo "aws ec2 delete-security-group --group-id ${SECG_ID}" 1>&2
   exit 1
 fi
 
