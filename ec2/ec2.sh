@@ -35,6 +35,7 @@ run_instances_result_json=`aws ec2 \
   ${PRIVATE_IP_ADDRESS:+--private-ip-address ${PRIVATE_IP_ADDRESS}} \
   --no-ebs-optimized \
   --count 1 \
+  --associate-public-ip-address \
   --block-device-mappings \
 '[
   {
