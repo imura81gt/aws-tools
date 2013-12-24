@@ -18,7 +18,7 @@ if [ -z "${PROFILE}" ]; then
 fi
 
 if [ -n ${PRIVATE_IP_ADDRESS} ]; then
-  if [ "$(aws ec2 describe-instances --filters Name=network-interface.addresses.private-ip-address,Values=${PRIVATE_IP_ADDRESS} --profile ${PROFILE} | jq '.Reservations[].Instances[].PrivateIpAddress|length')" -gt 0 ] ; then
+  if [ "$(aws ec2 describe-instances --filters Name=network-interface.addresses.private-ip-address,Values=${PRIVATE_IP_ADDRESS} --profile ${PROFILE} | jq '.Reservations[].Instances[].PrivateIpAddress|length')" \> 0 ] ; then
     echo "Error: Address ${PRIVATE_IP_ADDRESS} is in use is in use." 1>&2
     exit 1
   fi
