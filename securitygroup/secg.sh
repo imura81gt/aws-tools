@@ -16,33 +16,37 @@ do
   fi
 done
 
-if [ $(aws ec2 describe-security-groups --filters Name=group-name,Values=$SECG_NAME | jq '.SecurityGroups | length') == 1 ]
+if [ -z "${PROFILE}" ]; then
+  PROFILE=default
+fi
+
+if [ $(aws ec2 describe-security-groups --filters Name=group-name,Values=$SECG_NAME --profile ${PROFILE} | jq '.SecurityGroups | length') == 1 ]
 then
-  SECG_ID=`aws ec2 describe-security-groups --filters Name=group-name,Values=opp-batch | jq '.SecurityGroups[].GroupId' -r`
+  SECG_ID=`aws ec2 describe-security-groups --filters Name=group-name,Values=opp-batch --profile ${PROFILE} | jq '.SecurityGroups[].GroupId' -r`
   echo "Error: Already created Security Group(${SECG_NAME})" 1>&2
   echo "# You can remove the Security Group by the following command." 1>&2
-  echo "aws ec2 delete-security-group --group-id ${SECG_ID}" 1>&2
+  echo "aws ec2 delete-security-group --group-id ${SECG_ID} --profile ${PROFILE}" 1>&2
   exit 1
 fi
 
 echo "# Create a new Security Group ${SG_NAME} to VPC(${VPC_ID})"
-seg_g_result_array=(`aws ec2 create-security-group --group-name ${SECG_NAME} --description "${SECG_DESC}" --vpc-id ${VPC_ID} | jq '.return,.GroupId' -r`)
+seg_g_result_array=(`aws ec2 create-security-group --group-name ${SECG_NAME} --description "${SECG_DESC}" --vpc-id ${VPC_ID} --profile ${PROFILE} | jq '.return,.GroupId' -r`)
 
 SECG_RETURN=${seg_g_result_array[0]}
 SECG_ID=${seg_g_result_array[1]}
 
 if [ "${SECG_RETURN}" = "false" ]
 then
- echo "Error: aws ec2 --group-name ${SECG_NAME} --description "${SECG_DESC}" --vpc-id ${VPC_ID}"
+ echo "Error: aws ec2 --group-name ${SECG_NAME} --description "${SECG_DESC}" --vpc-id ${VPC_ID} --profile ${PROFILE}"
  exit 1
 fi
 
 echo "# Add rules"
-aws ec2 authorize-security-group-ingress --group-id ${SECG_ID} --ip-permissions ${IP_PERM_JSON}
+aws ec2 authorize-security-group-ingress --group-id ${SECG_ID} --ip-permissions ${IP_PERM_JSON} --profile ${PROFILE}
 
 echo "# The Security Group"
-aws ec2 describe-security-groups --filters Name=group-name,Values=${SECG_NAME} --query "SecurityGroups[0]"
+aws ec2 describe-security-groups --filters Name=group-name,Values=${SECG_NAME} --query "SecurityGroups[0]" --profile ${PROFILE}
 
 echo "# You can remove the Security Group by the following command."
-echo "aws ec2 delete-security-group --group-id ${SECG_ID}"
+echo "aws ec2 delete-security-group --group-id ${SECG_ID} --profile ${PROFILE}"
 
