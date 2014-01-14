@@ -1,7 +1,7 @@
 #!/bin/bash
-# curl -L https://raw.github.com/imura81gt/aws-tools/master/ec2/ec2.sh | VOLUME_SIZE=10 VOLUME_TYPE=standard VPC_ID=vpc-39b72651 INSTANCE_TYPE=t1.micro TAG_KEY_NAME_VALUE=test001 TAG_KEY_SERVICE_VALUE=test KEY_NAME=aws-realworld SECURITY_GROUP_IDS=sg-f1938493 SUBNET_ID=subnet-24a5344c PRIVATE_IP_ADDRESS=10.0.3.9 IMAGE_ID=ami-9ffa709e  PROFILE=imura bash
+# curl -L https://raw.github.com/imura81gt/aws-tools/master/ec2/ec2.sh | VPC_ID=vpc-39b72651 INSTANCE_TYPE=t1.micro TAG_KEY_NAME_VALUE=test001 TAG_KEY_SERVICE_VALUE=test KEY_NAME=aws-realworld SECURITY_GROUP_IDS=sg-f1938493 SUBNET_ID=subnet-24a5344c PRIVATE_IP_ADDRESS=10.0.3.9 IMAGE_ID=ami-9ffa709e BLOCK_DEVICE_MAPPINGS=[file://[filepath]|http://|json] PROFILE=imura bash
 
-for i in VOLUME_SIZE VOLUME_TYPE VPC_ID INSTANCE_TYPE TAG_KEY_NAME_VALUE TAG_KEY_SERVICE_VALUE KEY_NAME SECURITY_GROUP_IDS SUBNET_ID PRIVATE_IP_ADDRESS IMAGE_ID
+for i in VPC_ID INSTANCE_TYPE TAG_KEY_NAME_VALUE TAG_KEY_SERVICE_VALUE KEY_NAME SECURITY_GROUP_IDS SUBNET_ID PRIVATE_IP_ADDRESS IMAGE_ID BLOCK_DEVICE_MAPPINGS
 do
   I=$(eval echo '$'$i)
   if [ "${I}" == "" ]
@@ -36,18 +36,7 @@ run_instances_result_json=`aws ec2 \
   --no-ebs-optimized \
   --count 1 \
   --associate-public-ip-address \
-  --block-device-mappings \
-'[
-  {
-    "DeviceName": "/dev/sda",
-    "Ebs": {
-      "SnapshotId": "snap-6b398149",
-      "VolumeSize": '${VOLUME_SIZE}',
-      "DeleteOnTermination": false,
-      "VolumeType": "standard"
-    }
-  }
-]'\
+  --block-device-mappings ${BLOCK_DEVICE_MAPPINGS}\
   --profile ${PROFILE} \
 `
 
@@ -62,7 +51,13 @@ aws ec2 create-tags --resources ${INSTANCE_ID} --tags Key=Service,Value=${TAG_KE
 echo "# The Instance"
 aws ec2 describe-instances --instance-ids ${INSTANCE_ID} --profile ${PROFILE}
 VOLUME_ID=`aws ec2 describe-instances --instance-ids ${INSTANCE_ID} --profile ${PROFILE} | jq '.Reservations[].Instances[].BlockDeviceMappings[].Ebs.VolumeId' -r`
-echo "# You can remove the Security Group by the following command."
+echo "# issue the following commands."
+echo " ssh ${PRIVATE_IP_ADDRESS:+--private-ip-address ${PRIVATE_IP_ADDRESS}}"
+echo "## root device resize"
+echo " resize2fs /dev/xvde"
+echo "## root device warm up"
+echo " dd if=/dev/xvde of=/dev/null"
+echo "# You can remove the Instances by the following command."
 echo 'VOLUME_ID=`aws ec2 describe-instances --instance-ids '${INSTANCE_ID}' --profile '${PROFILE}' | jq '.Reservations[].Instances[].BlockDeviceMappings[].Ebs.VolumeId' -r`'
 echo "aws ec2 terminate-instances --instance-ids ${INSTANCE_ID} --profile ${PROFILE}"
 echo 'aws ec2 delete-volume --volume-id ${VOLUME_ID} --profile '${PROFILE}''
