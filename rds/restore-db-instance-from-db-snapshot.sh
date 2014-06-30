@@ -2,6 +2,8 @@
 #
 # RDS(master) と同じAZにRDSを作成
 # Nameタグ以外に必要なタグはTAGS='Key="タグ名",Value="値"'で設定
+# 本番かどうしているPGと別のPGを利用したい場合は DB_PARA_GROUPを設定
+#   ex. メモリ関連のパラメータを設定変更しててt1.microで起動できない場合
 # 
 # Requirements
 #   aws-cli/1.3.2  or higher
@@ -38,7 +40,12 @@ create_backup_rds()
   _MASTER_AZ=`echo $_MASTER_INST_JSON | jq -r '.[].AvailabilityZone'`
   echo _MASTER_AZ=${_MASTER_AZ}
 
-  _DB_PARA_GROUP=`echo $_MASTER_INST_JSON | jq -r '.[].DBParameterGroups[].DBParameterGroupName'`
+  if [ -z "${DB_PARA_GROUP}" ]; then
+    _DB_PARA_GROUP=`echo $_MASTER_INST_JSON | jq -r '.[].DBParameterGroups[].DBParameterGroupName'`
+  else
+    _DB_PARA_GROUP=${DB_PARA_GROUP}
+  fi
+
   echo _DB_PARA_GROUP=${_DB_PARA_GROUP}
 
   _DB_SEC_GROUP=`echo $_MASTER_INST_JSON | jq -r '.[].VpcSecurityGroups[].VpcSecurityGroupId'`
